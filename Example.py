@@ -24,29 +24,25 @@ class Example :
 			"\n questionText : " + str(self.question_text) +
 			"\n isCorrect    : " + str(self.is_ans_correct))
 
-class ExampleSet : 
-	example_set = []
-
-	def __init__(self, initial_set) : 
-		self.example_set = initial_set
-		
+class ExampleCreator : 
 	def train_item_to_examples(data_item) : 
 		example_set = []
 		long_ans, short_ans, yes_no_ans = None, None, None
 		question = data_item[QUESTION_TEXT]
 		document = data_item[DOCUMENT_TEXT].split()
 
-		long_ans_idx = self.get_outermost_long_ans_index(data_item[ANNOTATIONS][0],data_item[LONG_ANSWER_CANDIDATES])
+		long_ans_idx = ExampleCreator.get_outermost_long_ans_index(data_item[ANNOTATIONS][0],data_item[LONG_ANSWER_CANDIDATES])
 
 		for idx, candidate in enumerate(data_item[LONG_ANSWER_CANDIDATES]) : 
 			if candidate[TOP_LEVEL] == False : continue
 			if idx == long_ans_idx : 
-				[long_ans, short_ans, yes_no_ans] = self.get_ans_from_annotation(data_item[ANNOTATIONS][0],document)
+				[long_ans, short_ans, yes_no_ans] = ExampleCreator.get_ans_from_annotation(data_item[ANNOTATIONS][0],document)
 				example_set.append(Example(long_ans, short_ans, yes_no_ans, question, True))
 			else :
-				long_ans = self.get_string_from_token_list(
+				long_ans = ExampleCreator.get_string_from_token_list(
 					document[candidate[START_TOKEN]:candidate[END_TOKEN]])
 				example_set.append(Example(long_ans, None, None, question, False))
+		return example_set
 
 	def get_outermost_long_ans_index(annotations, long_ans_candidates) : 
 		long_ans = annotations[LONG_ANSWER]
@@ -57,19 +53,19 @@ class ExampleSet :
 
 		return candidate_idx
 
-	def get_ans_from_annotation(annotations,document) : 
+	def get_ans_from_annotation(annotations, document) : 
 		long_string  = None
 		short_string = None
 
 		if len(annotations[LONG_ANSWER]) > 0 : 
 			long_start = annotations[LONG_ANSWER][START_TOKEN]
 			long_end   = annotations[LONG_ANSWER][END_TOKEN]
-			long_string = self.get_string_from_token_list(document[long_start: long_end])
+			long_string = ExampleCreator.get_string_from_token_list(document[long_start: long_end])
 
 		if len(annotations[SHORT_ANSWER]) > 0 : 
 			short_start = annotations[SHORT_ANSWER][0][START_TOKEN]
 			short_end   = annotations[SHORT_ANSWER][0][END_TOKEN]
-			short_string = self.get_string_from_token_list(document[short_start: short_end])
+			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end])
 
 		yes_no_ans = annotations[YES_NO]
 
