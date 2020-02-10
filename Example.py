@@ -17,12 +17,13 @@ class Example :
 		self.is_ans_correct = is_correct      
 
 	def __repr__(self) : 
-		return ("Example : " + 
-			"\n longAns      : " + self.long_ans           + 
-			"\n shortAns     : " + str(self.short_ans)     + 
-			"\n yesNoAns     : " + str(self.yes_no_ans)    + 
-			"\n questionText : " + str(self.question_text) +
-			"\n isCorrect    : " + str(self.is_ans_correct))
+		return json.dumps(self.to_dict())
+
+	def to_list(self) : 
+		return [self.question_text, self.long_ans, self.short_ans, self.yes_no_ans, self.is_ans_correct]
+
+	def to_dict(self) : 
+		return {"question_text": self.question_text, "long_ans": self.long_ans, "short_ans": self.short_ans, "yes_no": self.yes_no_ans, "is_correct": self.is_ans_correct}
 
 class ExampleCreator : 
 	def train_item_to_examples(data_item) : 
