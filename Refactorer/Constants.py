@@ -1,3 +1,4 @@
+EXAMPLE_ID    = 'example_id'
 DOCUMENT_TEXT = 'document_text'
 LONG_ANSWER   = 'long_answer'
 SHORT_ANSWER  = 'short_answers'

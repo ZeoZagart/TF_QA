@@ -1,7 +1,7 @@
 import json
 from Constants import *
 
-class Example : 
+class TrainExample : 
 	long_ans: str        = None
 	short_ans: str       = None
 	yes_no_ans: bool     = False
@@ -25,10 +25,36 @@ class Example :
 	def to_dict(self) : 
 		return {"question_text": self.question_text, "long_ans": self.long_ans, "short_ans": self.short_ans, "yes_no": self.yes_no_ans, "is_correct": self.is_ans_correct}
 
+class TestExample : 
+	question_id: str   = None
+	question_text: str = None
+	long_ans: str      = None
+
+	def __init__(self, question_id: str, question_text: str, long_ans: str) : 
+		self.question_id = question_id
+		self.question_text = question_text
+		self.long_ans = long_ans
+
+	def to_dict(self) : 
+		return {"question_id": self.question_id, "question_text": self.question_text, "long_ans": self.long_ans}
+
 class ExampleCreator : 
+	def test_item_to_examples(data_item) : 
+		test_set    = []
+		question_id = data_item[EXAMPLE_ID]
+		question    = data_item[QUESTION_TEXT]
+		document    = data_item[DOCUMENT_TEXT].split()
+
+		for idx, candidate in enumerate(data_item[LONG_ANSWER_CANDIDATES]) : 
+			if candidate[TOP_LEVEL] == False : continue
+			long_ans = ExampleCreator.get_string_from_token_list(
+				document[candidate[START_TOKEN]:candidate[END_TOKEN]])
+			test_set.append(TestExample(question_id, question, long_ans))
+		return test_set
+
+
 	def train_item_to_examples(data_item) : 
-		example_set = []
-		long_ans, short_ans, yes_no_ans = None, None, None
+		train_set = []
 		question = data_item[QUESTION_TEXT]
 		document = data_item[DOCUMENT_TEXT].split()
 
@@ -38,12 +64,12 @@ class ExampleCreator :
 			if candidate[TOP_LEVEL] == False : continue
 			if idx == long_ans_idx : 
 				[long_ans, short_ans, yes_no_ans] = ExampleCreator.get_ans_from_annotation(data_item[ANNOTATIONS][0],document)
-				example_set.append(Example(long_ans, short_ans, yes_no_ans, question, True))
+				train_set.append(TrainExample(long_ans, short_ans, yes_no_ans, question, True))
 			else :
 				long_ans = ExampleCreator.get_string_from_token_list(
 					document[candidate[START_TOKEN]:candidate[END_TOKEN]])
-				example_set.append(Example(long_ans, None, None, question, False))
-		return example_set
+				train_set.append(TrainExample(long_ans, None, None, question, False))
+		return train_set
 
 	def get_outermost_long_ans_index(annotations, long_ans_candidates) : 
 		long_ans = annotations[LONG_ANSWER]
