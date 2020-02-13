@@ -1,9 +1,10 @@
 import json
-from Constants import *
+from typing import List, Tuple
+from DatasetRefactorer.Constants import *
 
 class TrainExample : 
 	long_ans: str        = None
-	short_ans: str       = None
+	short_ans: List[str] = None
 	yes_no_ans: bool     = False
 	question_text: str   = None
 	is_ans_correct: bool = False
@@ -14,7 +15,14 @@ class TrainExample :
 		self.short_ans      = short_ans
 		self.yes_no_ans     = yes_no_ans
 		self.question_text  = question_text
-		self.is_ans_correct = is_correct      
+		self.is_ans_correct = is_correct   
+
+	def __init__(self, item_dict) : 
+		self.long_ans       = item_dict['long_ans']
+		self.short_ans      = item_dict['short_ans']
+		self.yes_no_ans     = item_dict['yes_no']
+		self.question_text  = item_dict['question_text']
+		self.is_ans_correct = item_dict['is_correct']   
 
 	def __repr__(self) : 
 		return json.dumps(self.to_dict())
@@ -63,7 +71,7 @@ class ExampleCreator :
 		for idx, candidate in enumerate(data_item[LONG_ANSWER_CANDIDATES]) : 
 			if candidate[TOP_LEVEL] == False : continue
 			if idx == long_ans_idx : 
-				[long_ans, short_ans, yes_no_ans] = ExampleCreator.get_ans_from_annotation(data_item[ANNOTATIONS][0],document)
+				[long_ans, short_ans, yes_no_ans] = ExampleCreator.get_ans_from_annotation(data_item[ANNOTATIONS][0], document)
 				train_set.append(TrainExample(long_ans, short_ans, yes_no_ans, question, True))
 			else :
 				long_ans = ExampleCreator.get_string_from_token_list(
@@ -80,7 +88,7 @@ class ExampleCreator :
 
 		return candidate_idx
 
-	def get_ans_from_annotation(annotations, document) : 
+	def get_ans_from_annotation(annotations, document: str) : 
 		long_string  = None
 		short_string = None
 
@@ -89,14 +97,28 @@ class ExampleCreator :
 			long_end   = annotations[LONG_ANSWER][END_TOKEN]
 			long_string = ExampleCreator.get_string_from_token_list(document[long_start: long_end])
 
-		if len(annotations[SHORT_ANSWER]) > 0 : 
-			short_start = annotations[SHORT_ANSWER][0][START_TOKEN]
-			short_end   = annotations[SHORT_ANSWER][0][END_TOKEN]
+		short_answers = []
+		for ans in annotations[SHORT_ANSWER] : 
+			short_start, short_end = ans[START_TOKEN], ans[END_TOKEN]
+			if short_start < long_start : continue
 			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end])
+			short_ans_span = get_short_ans_span_from_long_string(short_string, long_string)
+			short_answers.append(short_string)
 
 		yes_no_ans = annotations[YES_NO]
 
-		return [long_string, short_string, yes_no_ans]
+		return [long_string, short_answers, yes_no_ans]
+
+	def get_short_ans_spans_from_long_ans(short_ans_string, long_ans_string: str) -> List[Tuple] : 
+		short_list = short_string.split()
+		long_list  = long_string.split()
+
+		for idx, string in enumerate(long_list) : 
+			if string == short_list[0] and 
+			   idx + len(short_list) <= len(long_list) and 
+			   long_list[idx + len(short_list) - 1] == short_list[-1] : 
+				return (idx,idx + len(short_list))
+
 
 	def get_string_from_token_list(tokens) :
 		token_join = ' '.join([token for token in tokens if token[0] != '<'])
