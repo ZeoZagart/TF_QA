@@ -100,7 +100,7 @@ class ExampleCreator :
 		for ans in annotations[SHORT_ANSWER] : 
 			short_start, short_end = ans[START_TOKEN], ans[END_TOKEN]
 			if short_start < long_start : continue
-			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end], can_have_lt = False)
+			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end], is_short_ans = True)
 			short_ans_span = ExampleCreator.get_short_ans_spans_from_long_ans(short_string, long_string)
 			if short_ans_span is not None : short_answers.append(short_string) 
 
@@ -120,7 +120,7 @@ class ExampleCreator :
 		return None
 
 
-	def get_string_from_token_list(tokens, can_have_lt: bool = True) -> str:
+	def get_string_from_token_list(tokens, is_short_ans: bool = True) -> str:
 		if can_have_lt == False :  token_join = ' '.join([token for token in tokens if token[0] != '<'])
 		else : token_join = ' '.join(tokens)
 		return token_join
