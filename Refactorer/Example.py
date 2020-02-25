@@ -121,6 +121,6 @@ class ExampleCreator :
 
 
 	def get_string_from_token_list(tokens, is_short_ans: bool = True) -> str:
-		if can_have_lt == False :  token_join = ' '.join([token for token in tokens if token[0] != '<'])
+		if is_short_ans == False :  token_join = ' '.join([token for token in tokens if token[0] != '<'])
 		else : token_join = ' '.join(tokens)
 		return token_join
