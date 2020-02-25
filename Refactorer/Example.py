@@ -10,19 +10,12 @@ class TrainExample :
 	is_ans_correct: bool = False
 
 	def __init__(self, long_ans: str, short_ans: str,
-					yes_no_ans: bool, question_text: str, is_correct: bool) : 
+					yes_no: bool, question_text: str, is_correct: bool) : 
 		self.long_ans       = long_ans
 		self.short_ans      = short_ans
-		self.yes_no_ans     = yes_no_ans
+		self.yes_no_ans     = yes_no
 		self.question_text  = question_text
 		self.is_ans_correct = is_correct   
-
-	def __init__(self, item_dict) : 
-		self.long_ans       = item_dict['long_ans']
-		self.short_ans      = item_dict['short_ans']
-		self.yes_no_ans     = item_dict['yes_no']
-		self.question_text  = item_dict['question_text']
-		self.is_ans_correct = item_dict['is_correct']   
 
 	def __repr__(self) : 
 		return json.dumps(self.to_dict())
@@ -34,20 +27,25 @@ class TrainExample :
 		return {"question_text": self.question_text, "long_ans": self.long_ans, "short_ans": self.short_ans, "yes_no": self.yes_no_ans, "is_correct": self.is_ans_correct}
 
 class TestExample : 
+	long_ans: str      = None
 	question_id: str   = None
 	question_text: str = None
-	long_ans: str      = None
 
 	def __init__(self, question_id: str, question_text: str, long_ans: str) : 
+		self.long_ans = long_ans
 		self.question_id = question_id
 		self.question_text = question_text
-		self.long_ans = long_ans
+
+	def __init__(self, item_dict) : 
+		self.long_ans = item_dict["long_ans"]
+		self.question_id = item_dict["question_id"]
+		self.question_text = item_dict["question_text"]
 
 	def to_dict(self) : 
 		return {"question_id": self.question_id, "question_text": self.question_text, "long_ans": self.long_ans}
 
 class ExampleCreator : 
-	def test_item_to_examples(data_item) : 
+	def test_item_to_examples(data_item) -> List[TestExample]: 
 		test_set    = []
 		question_id = data_item[EXAMPLE_ID]
 		question    = data_item[QUESTION_TEXT]
@@ -61,7 +59,7 @@ class ExampleCreator :
 		return test_set
 
 
-	def train_item_to_examples(data_item) : 
+	def train_item_to_examples(data_item) -> List[TrainExample]: 
 		train_set = []
 		question = data_item[QUESTION_TEXT]
 		document = data_item[DOCUMENT_TEXT].split()
@@ -79,7 +77,7 @@ class ExampleCreator :
 				train_set.append(TrainExample(long_ans, None, None, question, False))
 		return train_set
 
-	def get_outermost_long_ans_index(annotations, long_ans_candidates) : 
+	def get_outermost_long_ans_index(annotations, long_ans_candidates) -> int: 
 		long_ans = annotations[LONG_ANSWER]
 		if long_ans == None or len(long_ans) == 0 : return -1
 
@@ -88,7 +86,7 @@ class ExampleCreator :
 
 		return candidate_idx
 
-	def get_ans_from_annotation(annotations, document: str) : 
+	def get_ans_from_annotation(annotations, document: str) -> List[str]: 
 		long_string  = None
 		short_string = None
 
@@ -97,29 +95,32 @@ class ExampleCreator :
 			long_end   = annotations[LONG_ANSWER][END_TOKEN]
 			long_string = ExampleCreator.get_string_from_token_list(document[long_start: long_end])
 
+
 		short_answers = []
 		for ans in annotations[SHORT_ANSWER] : 
 			short_start, short_end = ans[START_TOKEN], ans[END_TOKEN]
 			if short_start < long_start : continue
-			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end])
-			short_ans_span = get_short_ans_span_from_long_string(short_string, long_string)
-			short_answers.append(short_string)
+			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end], can_have_lt = False)
+			short_ans_span = ExampleCreator.get_short_ans_spans_from_long_ans(short_string, long_string)
+			if short_ans_span is not None : short_answers.append(short_string) 
 
 		yes_no_ans = annotations[YES_NO]
 
 		return [long_string, short_answers, yes_no_ans]
 
-	def get_short_ans_spans_from_long_ans(short_ans_string, long_ans_string: str) -> List[Tuple] : 
+	def get_short_ans_spans_from_long_ans(short_string: str, long_string: str) -> Tuple : 
 		short_list = short_string.split()
 		long_list  = long_string.split()
 
 		for idx, string in enumerate(long_list) : 
-			if string == short_list[0] and 
-			   idx + len(short_list) <= len(long_list) and 
-			   long_list[idx + len(short_list) - 1] == short_list[-1] : 
-				return (idx,idx + len(short_list))
+			if string == short_list[0] and \
+				 idx + len(short_list) <= len(long_list) and \
+				 long_list[idx + len(short_list) - 1] == short_list[-1] : 
+					return (idx,idx + len(short_list))
+		return None
 
 
-	def get_string_from_token_list(tokens) :
-		token_join = ' '.join([token for token in tokens if token[0] != '<'])
-		return '<start> ' + token_join + ' <end>'
+	def get_string_from_token_list(tokens, can_have_lt: bool = True) -> str:
+		if can_have_lt == False :  token_join = ' '.join([token for token in tokens if token[0] != '<'])
+		else : token_join = ' '.join(tokens)
+		return token_join

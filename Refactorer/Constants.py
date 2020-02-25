@@ -11,8 +11,11 @@ YES_NO        = 'yes_no_answer'
 CANDIDATE_IDX = 'candidate_index'
 LONG_ANSWER_CANDIDATES = 'long_answer_candidates'
 
-train_file_path = '../simplified-nq-train.jsonl'
-test_file_path  = '../simplified-nq-test.jsonl'
+raw_train_path = './simplified-nq-train.jsonl'
+raw_test_path  = './simplified-nq-test.jsonl'
 
-train_op_path = '../trainfile.json'
-test_op_path  = '../testfile.json'
+train_path = './trainfile.json'
+test_path  = './testfile.json'
+
+train_len = 12084360
+test_len  = 13412
