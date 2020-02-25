@@ -120,7 +120,7 @@ class ExampleCreator :
 		return None
 
 
-	def get_string_from_token_list(tokens, is_short_ans: bool = True) -> str:
-		if is_short_ans == False :  token_join = ' '.join([token for token in tokens if token[0] != '<'])
-		else : token_join = ' '.join(tokens)
+	def get_string_from_token_list(tokens, is_short_ans: bool = False) -> str:
+		if is_short_ans == True : token_join = ' '.join(tokens)
+		else : token_join = ' '.join([token for token in tokens if token[0] != '<'])
 		return token_join
