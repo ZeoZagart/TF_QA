@@ -11,7 +11,8 @@ def error(function, message) :
 
 
 class NQDataset(Dataset) : 
-	def __init__(self, dataset) : 
+	def __init__(self, dataset, is_test = False) : 
+		self.is_test = is_test
 		self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 		self.data = dataset
 
@@ -24,6 +25,7 @@ class NQDataset(Dataset) :
 
 		# the inputs to bert
 		inputids, token_type, mask = tokenized['input_ids'], tokenized['token_type_ids'], tokenized['attention_mask'] 
+		if self.is_test == True : return inputids, token_type, mask
 
 		# the outputs expected
 		answer_type = self.get_ans_type(item)
