@@ -44,8 +44,8 @@ class NQDataset(Dataset) :
 		'''
 		ans_type = [0]*3
 		if item.is_ans_correct == False : ans_type[0]  = 1
-		elif item.yes_no_ans is not None : ans_type[2] = 1
 		elif item.short_ans is not None : ans_type[1]  = 1
+		elif item.yes_no_ans > 0 : ans_type[2] = 1
 		else : error("get_ans_type in NQDataset", "no answer type found")
 		return torch.LongTensor([ans_type])
 

@@ -13,7 +13,7 @@ class NQModel(torch.nn.Module):
         self.end_v   = torch.nn.Linear(in_features=512*768, out_features=512, bias=True)
         self.start_v = torch.nn.Linear(in_features=512*768, out_features=512, bias=True)
         
-        self.YN = torch.nn.Linear(in_features=768, out_features=1, bias=True)
+        self.YN = torch.nn.Linear(in_features=768, out_features=3, bias=True)
         
     def forward(self, inp_ids, attn_mask, token_types):
         op_all, op_first = self.bert(inp_ids, attn_mask, token_types)
