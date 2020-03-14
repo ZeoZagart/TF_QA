@@ -5,7 +5,7 @@ from DatasetRefactorer.Constants import *
 class TrainExample : 
 	long_ans: str        = None
 	short_ans: List[str] = None
-	yes_no_ans: bool     = False
+	yes_no_ans: int      = 0
 	question_text: str   = None
 	is_ans_correct: bool = False
 
@@ -74,7 +74,7 @@ class ExampleCreator :
 			else :
 				long_ans = ExampleCreator.get_string_from_token_list(
 					document[candidate[START_TOKEN]:candidate[END_TOKEN]])
-				train_set.append(TrainExample(long_ans, None, None, question, False))
+				train_set.append(TrainExample(long_ans, None, 0, question, False))
 		return train_set
 
 	def get_outermost_long_ans_index(annotations, long_ans_candidates) -> int: 
@@ -99,25 +99,16 @@ class ExampleCreator :
 		short_answers = []
 		for ans in annotations[SHORT_ANSWER] : 
 			short_start, short_end = ans[START_TOKEN], ans[END_TOKEN]
-			if short_start < long_start : continue
+			if short_start < long_start or short_end > long_end : continue
 			short_string = ExampleCreator.get_string_from_token_list(document[short_start: short_end], is_short_ans = True)
-			short_ans_span = ExampleCreator.get_short_ans_spans_from_long_ans(short_string, long_string)
-			if short_ans_span is not None : short_answers.append(short_string) 
+			short_answers.append(short_string) 
 
-		yes_no_ans = annotations[YES_NO]
+		yes_no_ans = annotations[YES_NO].lower()
+		if yes_no_ans == 'true' : yes_no_ans = 2
+		elif yes_no_ans == 'false' : yes_no_ans = 1
+		else : yes_no_ans = 0
 
 		return [long_string, short_answers, yes_no_ans]
-
-	def get_short_ans_spans_from_long_ans(short_string: str, long_string: str) -> Tuple : 
-		short_list = short_string.split()
-		long_list  = long_string.split()
-
-		for idx, string in enumerate(long_list) : 
-			if string == short_list[0] and \
-				 idx + len(short_list) <= len(long_list) and \
-				 long_list[idx + len(short_list) - 1] == short_list[-1] : 
-					return (idx,idx + len(short_list))
-		return None
 
 
 	def get_string_from_token_list(tokens, is_short_ans: bool = False) -> str:
