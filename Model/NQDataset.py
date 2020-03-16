@@ -10,16 +10,18 @@ def error(function, message) :
 	print("message :", message)
 
 
-class NQDataset(Dataset) : 
+class NQDataset(Dataset, device) : 
 	def __init__(self, dataset, is_test = False) : 
 		self.is_test = is_test
 		self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 		self.data = dataset
+		self.device = device
 
 	def __len__(self) : 
 		return len(self.data)
 
 	def __getitem__(self, index) : 
+		device = self.device
 		item = self.data[index]
 		tokenized = self.tokenizer.encode_plus(item.question_text, item.long_ans, **tokenizer_config)
 
@@ -32,7 +34,7 @@ class NQDataset(Dataset) :
 		short_start, short_end = self.get_short_start_end(item.short_ans, inputids.tolist()[0])
 		yes_no = torch.LongTensor([item.yes_no_ans or 0])
 
-		return inputids, token_type, mask, answer_type, short_start, short_end, yes_no
+		return inputids.to(device), token_type.to(device), mask.to(device), answer_type.to(device), short_start.to(device), short_end.to(device), yes_no.to(device)
 
 	def get_ans_type(self, item) : 
 		'''

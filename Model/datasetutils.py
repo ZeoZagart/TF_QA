@@ -7,12 +7,12 @@ from torch.utils.data import DataLoader
 from DatasetRefactorer import Constants
 from DatasetRefactorer.Example import TrainExample
 
-def get_dataset() : 
+def get_dataset(device = torch.device("cpu")) : 
 	with open(Constants.train_path,"r") as train_file : 
 		dataset = [TrainExample(**(json.loads(line))) for line in tqdm(train_file)]
 
-	nqdataset = NQDataset(dataset)
-	train_len = int(len(nqdataset) - 70)
+	nqdataset = NQDataset(dataset, device)
+	train_len = int(len(nqdataset)*0.75)
 	valid_len = len(nqdataset) - train_len
 	trainData, valData = torch.utils.data.random_split(nqdataset, [train_len, valid_len] )
 	traingen = DataLoader(trainData, **ModelConstants.dataset_params)
