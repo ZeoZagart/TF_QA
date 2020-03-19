@@ -10,8 +10,8 @@ def error(function, message) :
 	print("message :", message)
 
 
-class NQDataset(Dataset, device) : 
-	def __init__(self, dataset, is_test = False) : 
+class NQDataset(Dataset) : 
+	def __init__(self, dataset, device, is_test = False) : 
 		self.is_test = is_test
 		self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 		self.data = dataset
