@@ -1,19 +1,17 @@
-import Constants
-from Example import ExampleCreator
+import DatasetRefactorer.Constants as Constants
+from DatasetRefactorer.Example import ExampleCreator
 from tqdm import tqdm
 import json
 
-test_file_path = Constants.test_file_path
-test_op_path   = Constants.test_op_path
+def refactor_test() : 
+	output_file = open(Constants.test_path,"w")
 
-output_file = open(test_op_path,"w")
+	with open(Constants.raw_test_path,"r") as test_file : 
+	    for line in tqdm(test_file) : 
+	        data = json.loads(line)
+	        test_examples = ExampleCreator.test_item_to_examples(data)
+	        test_examples = [json.dumps(example.to_dict()) for example in test_examples]
+	        for item in test_examples : 
+	            output_file.write(item + '\n')
 
-with open(test_file_path,"r") as test_file : 
-    for line in tqdm(test_file) : 
-        data = json.loads(line)
-        test_examples = ExampleCreator.test_item_to_examples(data)
-        test_examples = [json.dumps(example.to_dict()) for example in test_examples]
-        for item in test_examples : 
-            output_file.write(item + '\n')
-
-output_file.close()
+	output_file.close()
