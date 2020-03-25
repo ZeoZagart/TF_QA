@@ -11,17 +11,15 @@ def error(function, message) :
 
 
 class NQDataset(Dataset) : 
-	def __init__(self, dataset, device, is_test = False) : 
+	def __init__(self, dataset, is_test = False) : 
 		self.is_test = is_test
 		self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 		self.data = dataset
-		self.device = device
 
 	def __len__(self) : 
 		return len(self.data)
 
 	def __getitem__(self, index) : 
-		device = self.device
 		item = self.data[index]
 		tokenized = self.tokenizer.encode_plus(item.question_text, item.long_ans, **tokenizer_config)
 
@@ -32,9 +30,9 @@ class NQDataset(Dataset) :
 		# the outputs expected
 		answer_type = self.get_ans_type(item)
 		short_start, short_end = self.get_short_start_end(item.short_ans, inputids.tolist()[0])
-		yes_no = torch.LongTensor([item.yes_no_ans or 0])
+		yes_no = torch.LongTensor([item.yes_no_ans or 0], requires_grad = False)
 
-		return inputids.to(device), token_type.to(device), mask.to(device), answer_type.to(device), short_start.to(device), short_end.to(device), yes_no.to(device)
+		return inputids, token_type, mask, answer_type, short_start, short_end, yes_no
 
 	def get_ans_type(self, item) : 
 		'''
@@ -49,7 +47,7 @@ class NQDataset(Dataset) :
 		elif item.short_ans is not None : ans_type[1]  = 1
 		elif item.yes_no_ans > 0 : ans_type[2] = 1
 		else : error("get_ans_type in NQDataset", "no answer type found")
-		return torch.LongTensor([ans_type])
+		return torch.LongTensor([ans_type], requires_grad = False)
 
 	def get_short_start_end(self, short_ans_list: List[str], long_list: List[int]) : 
 		'''
@@ -66,7 +64,7 @@ class NQDataset(Dataset) :
 			start_list[start] = 1
 			end_list[end] = 1
 
-		return torch.LongTensor([start_list]), torch.LongTensor([end_list])
+		return torch.LongTensor([start_list], requires_grad = False), torch.LongTensor([end_list], requires_grad = False)
 
 
 	def get_span(self, short_string: str, long_list: List[int]) : 
