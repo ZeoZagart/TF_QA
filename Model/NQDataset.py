@@ -30,7 +30,7 @@ class NQDataset(Dataset) :
 		# the outputs expected
 		answer_type = self.get_ans_type(item)
 		short_start, short_end = self.get_short_start_end(item.short_ans, inputids.tolist()[0])
-		yes_no = torch.tensor([item.yes_no_ans or 0], requires_grad = False, dtype = torch.uint8)
+		yes_no = torch.tensor([item.yes_no_ans or 0], requires_grad = False, dtype = torch.long)
 
 		return inputids, token_type, mask, answer_type, short_start, short_end, yes_no
 
@@ -47,7 +47,7 @@ class NQDataset(Dataset) :
 		elif item.short_ans is not None : ans_type[1]  = 1
 		elif item.yes_no_ans > 0 : ans_type[2] = 1
 		else : error("get_ans_type in NQDataset", "no answer type found")
-		return torch.tensor([ans_type], requires_grad = False, dtype = torch.uint8)
+		return torch.tensor([ans_type], requires_grad = False, dtype = torch.long)
 
 	def get_short_start_end(self, short_ans_list: List[str], long_list: List[int]) : 
 		'''
@@ -64,7 +64,7 @@ class NQDataset(Dataset) :
 			start_list[start] = 1
 			end_list[end] = 1
 
-		return torch.tensor([start_list], requires_grad = False, dtype = torch.uint8), torch.tensor([end_list], requires_grad = False, dtype = torch.uint8)
+		return torch.tensor([start_list], requires_grad = False, dtype = torch.long), torch.tensor([end_list], requires_grad = False, dtype = torch.long)
 
 
 	def get_span(self, short_string: str, long_list: List[int]) : 
