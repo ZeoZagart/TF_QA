@@ -1,6 +1,6 @@
 sentence_len = 512
 
-dataset_params = {'batch_size': 32,
+dataset_params = {'batch_size': 256,
           'shuffle': True}
 
 tokenizer_config = {
