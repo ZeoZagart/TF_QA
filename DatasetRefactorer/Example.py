@@ -10,7 +10,7 @@ class TrainExample :
 	is_ans_correct: bool = False
 
 	def __init__(self, long_ans: str, short_ans: str,
-					yes_no: bool, question_text: str, is_correct: bool) : 
+					yes_no: int, question_text: str, is_correct: bool) : 
 		self.long_ans       = long_ans
 		self.short_ans      = short_ans
 		self.yes_no_ans     = yes_no

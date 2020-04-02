@@ -30,9 +30,16 @@ class NQDataset(Dataset) :
 		# the outputs expected
 		answer_type = self.get_ans_type(item)
 		short_start, short_end = self.get_short_start_end(item.short_ans, inputids.tolist()[0])
-		yes_no = torch.tensor([item.yes_no_ans or 0], requires_grad = False, dtype = torch.long)
+		yes_no = self.get_yes_no(item)
 
 		return inputids, mask, token_type, answer_type, short_start, short_end, yes_no
+
+	def get_yes_no(self, item): 
+		one_hot = [0,0,0]
+		one_hot[item.yes_no_ans] = 1
+
+		yes_no = torch.tensor(one_hot, requires_grad = False, dtype = torch.long)
+
 
 	def get_ans_type(self, item) : 
 		'''
