@@ -7,3 +7,4 @@ testfile.json
 trainfile.json
 .ipynb_checkpoints/Train-checkpoint.ipynb
 *.pyc
+*.zip
