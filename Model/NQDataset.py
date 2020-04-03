@@ -38,8 +38,7 @@ class NQDataset(Dataset) :
 		one_hot = [0,0,0]
 		one_hot[item.yes_no_ans] = 1
 
-		yes_no = torch.tensor(one_hot, requires_grad = False, dtype = torch.long)
-
+		return torch.tensor(one_hot, requires_grad = False, dtype = torch.long) 
 
 	def get_ans_type(self, item) : 
 		'''
